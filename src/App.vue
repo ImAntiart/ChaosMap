@@ -18,6 +18,7 @@ const mapComponent = ref(null);
 const toggleSidebar = () => {
   if (mapComponent.value && typeof mapComponent.value.toggleSidebar === 'function') {
     mapComponent.value.toggleSidebar();
+    console.log('Вызван метод toggleSidebar из App.vue');
   } else {
     console.error('Метод toggleSidebar не найден в Map.vue');
   }

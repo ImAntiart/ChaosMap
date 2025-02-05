@@ -45,28 +45,28 @@
   
   // Добавление маршрута
   const addRoute = () => {
-    // Парсим координаты из строк
-    const parseCoordinates = (input) => {
-      const coords = input.split(',').map((value) => parseFloat(value.trim()));
-      return !isNaN(coords[0]) && !isNaN(coords[1]) ? coords : null;
-    };
-  
-    const start = parseCoordinates(firstPoint.value);
-    const end = parseCoordinates(secondPoint.value);
-  
-    if (!start || !end) {
-      alert('Некорректные координаты!');
-      return;
-    }
-  
-    const coords = [start, end];
-    emit('addRoute', coords); 
-    routes.value.push({ coords }); 
-  
-    // Сбрасываем поля ввода
-    firstPoint.value = '';
-    secondPoint.value = '';
+  const parseCoordinates = (input) => {
+    const coords = input.split(',').map((value) => parseFloat(value.trim()));
+    return !isNaN(coords[0]) && !isNaN(coords[1]) ? coords : null;
   };
+
+  const start = parseCoordinates(firstPoint.value);
+  const end = parseCoordinates(secondPoint.value);
+
+  if (!start || !end) {
+    console.error('Некорректные координаты:', firstPoint.value, secondPoint.value);
+    alert('Некорректные координаты!');
+    return;
+  }
+
+  const coords = [start, end];
+  emit('addRoute', coords);
+  routes.value.push({ coords });
+  console.log('Отправлены координаты:', coords);
+
+  firstPoint.value = '';
+  secondPoint.value = '';
+};
     
   // Удаление маршрута из списка
   const removeRoute = (index) => {

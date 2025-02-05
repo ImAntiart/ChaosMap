@@ -37,14 +37,13 @@ onMounted(() => {
     console.error('Контейнер для карты не найден!');
     return;
   }
-
+  console.log('Инициализация карты...');
   map = L.map('map').setView([55.751244, 37.618423], 13);
-
-  // Добавляем слой плиток
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
   }).addTo(map);
-
+  console.log('Карта успешно инициализирована.');
+});
   // Обработка изменения размера карты
   setTimeout(() => {
     map.invalidateSize();
@@ -84,7 +83,7 @@ onMounted(() => {
   onUnmounted(() => {
     window.removeEventListener('keydown', handleEscape);
   });
-});
+/* }); */
 
 // Функция для добавления маршрута на карту (существующий метод)
 const addRoute = (coords) => {
@@ -94,12 +93,11 @@ const addRoute = (coords) => {
 
 // Метод для добавления маршрута из сайдбара (новый метод)
 const addRouteFromSidebar = (coords) => {
+  console.log('Получены координаты из сайдбара:', coords);
   if (coords.length === 2) {
-    // Создаем линию между точками
     const polyline = L.polyline(coords, { color: 'green' }).addTo(map);
-
-    // Добавляем линию в массив маршрутов
     routes.value.push({ coords, polyline });
+    console.log('Линия успешно добавлена на карту:', coords);
   } else {
     console.error('Неверное количество координат:', coords);
   }
@@ -116,6 +114,12 @@ defineExpose({
   toggleSidebar,
   addRouteFromSidebar, // Экспорт нового метода
 });
+
+// Метод для открытия/закрытия сайдбара
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+  console.log('Сайдбар открыт:', isSidebarOpen.value); // Тестирование
+};
 </script>
 
 <style scoped>
