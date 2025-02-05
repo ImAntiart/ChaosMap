@@ -1,7 +1,6 @@
 <template>
   <div id="map-container">
     <div id="map"></div>
-    <!-- Сайдбар -->
     <transition name="fade">
       <div v-if="isSidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
     </transition>
@@ -21,13 +20,8 @@ import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet-draw';
-import Sidebar from './Sidebar.vue';
-import { defineExpose } from 'vue';
 
-// Открытие/закрытие сайдбара
 const isSidebarOpen = ref(false);
-
-// Массив для хранения всех маршрутов
 const routes = ref([]);
 let map;
 
@@ -37,19 +31,19 @@ onMounted(() => {
     console.error('Контейнер для карты не найден!');
     return;
   }
-  console.log('Инициализация карты...');
+
   map = L.map('map').setView([55.751244, 37.618423], 13);
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
   }).addTo(map);
-  console.log('Карта успешно инициализирована.');
-});
-  // Обработка изменения размера карты
+
   setTimeout(() => {
-    map.invalidateSize();
+    if (map) {
+      map.invalidateSize();
+    }
   }, 0);
 
-  // Добавляем панель инструментов для рисования
   const drawControl = new L.Control.Draw({
     edit: false,
     remove: false,
@@ -63,77 +57,110 @@ onMounted(() => {
   });
   map.addControl(drawControl);
 
-  // Обработка события создания новой линии
   map.on('draw:created', (event) => {
     if (event.layerType === 'polyline') {
       const coords = event.layer.getLatLngs().map((point) => [point.lat, point.lng]);
       addRoute(coords);
     }
   });
+});
 
-  // Обработка клавиши Esc
-  const handleEscape = (event) => {
-    if (event.key === 'Escape' && isSidebarOpen.value) {
-      closeSidebar();
-    }
-  };
-  window.addEventListener('keydown', handleEscape);
 
-  // Удаление слушателя при размонтировании компонента
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleEscape);
-  });
-/* }); */
-
-// Функция для добавления маршрута на карту (существующий метод)
-const addRoute = (coords) => {
+const addRoute = (coords, speed = 50) => {
   const polyline = L.polyline(coords, { color: 'blue' }).addTo(map);
-  routes.value.push({ coords, polyline });
+
+  const startPoint = L.marker(coords[0]).addTo(map);
+  const endPoint = L.marker(coords[coords.length - 1]).addTo(map);
+
+  const distance = calculateDistance(coords);
+  const arrivalTime = calculateArrivalTime(distance, speed);
+  const departureTime = new Date();
+
+  startPoint.bindTooltip(`Время отправления: ${formatDate(departureTime)}`, {
+    permanent: true,
+    direction: 'top',
+  });
+
+  endPoint.bindTooltip(
+    `Средняя скорость: ${speed} км/ч\nОсталось: ${arrivalTime}`,
+    {
+      permanent: true,
+      direction: 'top',
+    }
+  );
+
+  endPoint.on('click', () => {
+    map.removeLayer(polyline);
+    map.removeLayer(startPoint);
+    map.removeLayer(endPoint);
+    routes.value = routes.value.filter((route) => route !== polyline);
+  });
+
+  routes.value.push({ coords, polyline, speed, distance, departureTime });
 };
 
-// Метод для добавления маршрута из сайдбара (новый метод)
-const addRouteFromSidebar = (coords) => {
-  console.log('Получены координаты из сайдбара:', coords);
-  if (coords.length === 2) {
-    const polyline = L.polyline(coords, { color: 'green' }).addTo(map);
-    routes.value.push({ coords, polyline });
-    console.log('Линия успешно добавлена на карту:', coords);
+
+const addRouteFromSidebar = (coords, speed) => {
+  if (coords.length >= 2) {
+    addRoute(coords, speed);
   } else {
-    console.error('Неверное количество координат:', coords);
+    console.error('Недостаточно координат для создания маршрута:', coords);
   }
 };
 
-// Функция для очистки всех маршрутов
+const calculateDistance = (coords) => {
+  let totalDistance = 0;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const point1 = L.latLng(coords[i][0], coords[i][1]);
+    const point2 = L.latLng(coords[i + 1][0], coords[i + 1][1]);
+    totalDistance += point1.distanceTo(point2) / 1000; 
+  }
+  return totalDistance;
+};
+
+
+const calculateArrivalTime = (distance, speed) => {
+  const timeInSeconds = (distance / speed) * 3600; 
+  const arrivalTime = new Date(Date.now() + timeInSeconds * 1000);
+  return arrivalTime.toLocaleTimeString();
+};
+
+
+const formatDate = (date) => {
+  return date.toLocaleString();
+};
+
 const clearRoutes = () => {
-  routes.value.forEach((route) => map.removeLayer(route.polyline));
+  routes.value.forEach((route) => {
+    map.removeLayer(route.polyline);
+  });
   routes.value = [];
 };
 
-// Экспорт методов для использования в других компонентах
-defineExpose({
-  toggleSidebar,
-  addRouteFromSidebar, // Экспорт нового метода
-});
 
-// Метод для открытия/закрытия сайдбара
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
-  console.log('Сайдбар открыт:', isSidebarOpen.value); // Тестирование
 };
+const closeSidebar = () => {
+  isSidebarOpen.value = false;
+};
+
+defineExpose({
+  toggleSidebar,
+  addRouteFromSidebar,
+});
 </script>
 
 <style scoped>
+
 #map-container {
   position: relative;
   height: 100%;
 }
-
 #map {
   width: 100%;
   height: 100%;
 }
-
-/* Оверлей для затемнения карты */
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -143,8 +170,6 @@ const toggleSidebar = () => {
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
 }
-
-/* Сайдбар */
 .sidebar {
   position: fixed;
   top: 0;
@@ -157,7 +182,6 @@ const toggleSidebar = () => {
   padding: 20px;
   overflow-y: auto;
 }
-
 .close-sidebar {
   position: absolute;
   top: 10px;
@@ -169,26 +193,13 @@ const toggleSidebar = () => {
   border-radius: 5px;
   cursor: pointer;
 }
-
-/* Анимация появления сайдбара */
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.3s ease;
-}
-
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateX(100%);
-}
-
-/* Анимация затемнения оверлея */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.clear-routes {
+  margin-top: 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>

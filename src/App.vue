@@ -14,33 +14,34 @@ import { ref } from 'vue';
 
 const mapComponent = ref(null);
 
-// Передаем событие toggleSidebar в Map.vue
 const toggleSidebar = () => {
   if (mapComponent.value && typeof mapComponent.value.toggleSidebar === 'function') {
     mapComponent.value.toggleSidebar();
-    console.log('Вызван метод toggleSidebar из App.vue');
   } else {
     console.error('Метод toggleSidebar не найден в Map.vue');
   }
 };
 
-const handleAddRoute = (coords) => {
-  if (mapComponent.value && typeof mapComponent.value.addRouteFromSidebar === 'function') {
-    mapComponent.value.addRouteFromSidebar(coords);
+const handleAddRoute = (coords, speed) => {
+  if (
+    mapComponent.value &&
+    typeof mapComponent.value.addRouteFromSidebar === 'function'
+  ) {
+    mapComponent.value.addRouteFromSidebar(coords, speed);
   } else {
     console.error('Метод addRouteFromSidebar не найден в Map.vue');
   }
 };
-
 </script>
 
 <style>
-html, body, #app {
+html,
+body,
+#app {
   height: 100%;
   margin: 0;
   padding: 0;
 }
-
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -53,11 +54,8 @@ html, body, #app {
   display: flex;
   flex-direction: column;
 }
-
 .map-wrapper {
-  flex: 1; /* Карта занимает всё доступное пространство */
+  flex: 1;
   position: relative;
 }
-
-
 </style>
