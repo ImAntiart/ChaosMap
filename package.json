@@ -1,0 +1,22 @@
+{
+  "name": "vue-leaflet-map",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet-draw": "^1.0.4",
+    "vue": "^3.0.4"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "^2.0.8",
+    "@quasar/extras": "^1.16.16",
+    "@quasar/vite-plugin": "^1.9.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/compiler-sfc": "^3.0.4",
+    "sass": "^1.83.4",
+    "vite": "^6.0.11"
+  }
+}
