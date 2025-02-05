@@ -1,7 +1,7 @@
 <template>
   <Header @toggleSidebar="toggleSidebar" />
   <div class="map-wrapper">
-    <Map ref="mapComponent" />
+    <Map ref="mapComponent" @addRoute="handleAddRoute" />
   </div>
   <Footer />
 </template>
@@ -22,6 +22,15 @@ const toggleSidebar = () => {
     console.error('Метод toggleSidebar не найден в Map.vue');
   }
 };
+
+const handleAddRoute = (coords) => {
+  if (mapComponent.value && typeof mapComponent.value.addRouteFromSidebar === 'function') {
+    mapComponent.value.addRouteFromSidebar(coords);
+  } else {
+    console.error('Метод addRouteFromSidebar не найден в Map.vue');
+  }
+};
+
 </script>
 
 <style>

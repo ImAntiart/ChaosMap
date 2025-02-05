@@ -60,9 +60,8 @@
     }
   
     const coords = [start, end];
-  
-    emit('addRoute', coords); // Эмитируем событие с координатами
-    routes.value.push({ coords }); // Сохраняем маршрут в локальном массиве
+    emit('addRoute', coords); 
+    routes.value.push({ coords }); 
   
     // Сбрасываем поля ввода
     firstPoint.value = '';

@@ -27,20 +27,11 @@ import { defineExpose } from 'vue';
 // Открытие/закрытие сайдбара
 const isSidebarOpen = ref(false);
 
-// Функции для управления сайдбаром
-const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value;
-};
-const closeSidebar = () => {
-  isSidebarOpen.value = false;
-};
-
 // Массив для хранения всех маршрутов
 const routes = ref([]);
 let map;
 
 onMounted(() => {
-  // Убедимся, что DOM-элемент #map существует
   const mapContainer = document.getElementById('map');
   if (!mapContainer) {
     console.error('Контейнер для карты не найден!');
@@ -56,7 +47,7 @@ onMounted(() => {
 
   // Обработка изменения размера карты
   setTimeout(() => {
-    map.invalidateSize(); // Корректируем размер после рендера
+    map.invalidateSize();
   }, 0);
 
   // Добавляем панель инструментов для рисования
@@ -87,7 +78,6 @@ onMounted(() => {
       closeSidebar();
     }
   };
-
   window.addEventListener('keydown', handleEscape);
 
   // Удаление слушателя при размонтировании компонента
@@ -96,10 +86,23 @@ onMounted(() => {
   });
 });
 
-// Функция для добавления маршрута на карту
+// Функция для добавления маршрута на карту (существующий метод)
 const addRoute = (coords) => {
   const polyline = L.polyline(coords, { color: 'blue' }).addTo(map);
   routes.value.push({ coords, polyline });
+};
+
+// Метод для добавления маршрута из сайдбара (новый метод)
+const addRouteFromSidebar = (coords) => {
+  if (coords.length === 2) {
+    // Создаем линию между точками
+    const polyline = L.polyline(coords, { color: 'green' }).addTo(map);
+
+    // Добавляем линию в массив маршрутов
+    routes.value.push({ coords, polyline });
+  } else {
+    console.error('Неверное количество координат:', coords);
+  }
 };
 
 // Функция для очистки всех маршрутов
@@ -108,9 +111,10 @@ const clearRoutes = () => {
   routes.value = [];
 };
 
-// Экспорт метода для использования в других компонентах
+// Экспорт методов для использования в других компонентах
 defineExpose({
-  toggleSidebar // Экспорт метода
+  toggleSidebar,
+  addRouteFromSidebar, // Экспорт нового метода
 });
 </script>
 
